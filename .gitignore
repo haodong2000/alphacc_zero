@@ -6,6 +6,10 @@ __pycache__/
 # C extensions
 *.so
 
+# 2022-07-22
+gpu_models/
+temp.py
+
 # Distribution / packaging
 .Python
 build/
