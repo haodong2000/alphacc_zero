@@ -7,6 +7,7 @@
 Python 3.6.13
 cuda 11.2
 tensorflow-gpu 2.6.2
+pillow 8.4.0
 pillow
 scipy
 ```
