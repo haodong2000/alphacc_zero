@@ -9,6 +9,7 @@ cuda 11.2
 tensorflow-gpu 2.6.2
 pillow 8.4.0
 scipy
+uvloop
 ```
 
 - How to run:
