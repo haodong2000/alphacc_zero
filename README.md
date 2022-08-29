@@ -30,3 +30,7 @@ python main.py --mode play --processor gpu --num_gpus 1 --ai_function mcts --ai_
 - Network Structure
 
 ![net](https://user-images.githubusercontent.com/67775090/187149554-b554c158-8d44-451a-9457-2646c8820bc6.png)
+
+- Reference
+
+[1] Silver, David, Schrittwieser, Julian, Simonyan, Karen, Antonoglou, Ioannis, Huang, Aja, Guez, Arthur, Hubert, Thomas, Baker, Lucas, Lai, Matthew, Bolton, Adrian, Chen, Yutian, Lillicrap, Timothy, Hui, Fan, Sifre, Laurent, van den Driessche, George, Graepel, Thore and Hassabis, Demis. "Mastering the game of Go without human knowledge." Nature 550 (2017): 354--.
