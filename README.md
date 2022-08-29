@@ -29,4 +29,4 @@ python main.py --mode play --processor gpu --num_gpus 1 --ai_function mcts --ai_
 
 - Network Structure
 
-![net](https://user-images.githubusercontent.com/67775090/187149118-42c8884a-2a37-4f3f-b146-a9d719321650.png)
+![net](https://user-images.githubusercontent.com/67775090/187149554-b554c158-8d44-451a-9457-2646c8820bc6.png)
