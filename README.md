@@ -1,5 +1,7 @@
 # SRTP_Alpha_CC_Zero
 
+### From ZJU-ShallowMind
+
 - Alpha CC Zero: A Deep Reinforcement Learning Model for Chinese Chess
 - Environment:
 
