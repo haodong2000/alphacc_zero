@@ -2,7 +2,7 @@
 
 ### From ZJU-ShallowMind
 
-- Alpha CC Zero: A Deep Reinforcement Learning Model for Chinese Chess
+- Alpha CC Zero:  A Deep Reinforcement Learning Model for Chinese Chess
 - Environment:
 
 ```
