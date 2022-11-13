@@ -38,3 +38,44 @@ $$
 $$
  Among them, $\tau$ is a coefficient about the exploration level. After the MCTS executes the move $m_r$, the subtree data of the previous root node $s_r$ except the subtree corresponding to $m_r$ will be discarded, and the data of the subtree corresponding to $m_r$ will be retained. At this time, the child node reached by MCTS becomes the root node, and the next round of simulation is restarted.
  
+# deep neural network
+
+## input features
+
+Chess pieces are divided into 7 types of chess pieces: rooks, horses, guns, elephants, soldiers, generals, and pawns. Each side has 7 characteristic planes, and a chess game has a total of 14 characteristic planes. Other feature planes include (to be added: color, number of rounds, repeating positions, historical move records, and other features). The checkerboard size is 9∗10, so the input feature dimension is 9×10×N.
+
+## network structure
+
+The network structure adopted by this algorithm combines the strategy network and the value network. The main body of the network is composed of a convolution block and multiple residual blocks, and the residual block is followed by a strategy header and a value header respectively.
+
+
+
+The convolution block uses 256 convolution kernels to extract features. The size of the convolution kernel is 3×3 and the stride is 1. After the convolution operation, batch normalization is performed, and then the Relu activation function is used.
+
+
+
+The internal structure of the residual block is similar to the convolution block. One residual block contains two convolution layers, and a shortcut is added before the input and the last activation function to form a residual structure.
+
+
+
+The strategy head uses the softmax activation function to output the probability of all possible moves, and the value head uses the tanh activation function to output the winning rate of the mover in the current situation.
+
+
+
+## Network training process
+
+Firstly, the chess game data used for network training is obtained through the self-play process. In this process, use the latest neural network parameters $f_{\theta}$ to complete self-play with MTCS, each move is determined by the action probability vector π obtained after N times of simulation, until the winner is determined and the winner is obtained. result z. After a large number of self-play games, the position s of each move in each chess game, the calculated action probability vector π and the game result z are saved, and the training neural network chess score data is obtained.
+
+
+
+The input of the neural network is the position s, and the output is the predicted action probability vector p and the win rate v, namely: $$ f_{\theta}(p, v)=f_{\theta_{i}}(s) $$
+
+
+
+The training goal of the neural network is to make the output of the neural network closer to the result obtained by the simulated search, that is, to minimize the error between the move probability p and the search probability π and the predicted winning rate v and the game result z, so as to improve the neural network's move. Level. Therefore, the following loss function is defined:
+$$
+l=(z-v)^{2}-\pi^{T} \log p+c\|\theta\|^{2}
+$$
+The first term is the mean square error between the predicted winning rate v and the game result z, the second term is the cross entropy loss between the move probability p and the search probability π, and the third term is the L2 regularization term to prevent parameter overfitting , c is a hyper parameter that adjusts the regularization level. 
+
+ Use the chess data obtained in the self-playing session to train the neural network, so that the network parameter θ is continuously updated by the gradient descent through the loss function l, and the latest neural network parameter $f_{\theta}$ is obtained after the training is completed, which is used for the next round. Iterative self-play process until neural network parameters with sufficiently high chess playing level are obtained.
