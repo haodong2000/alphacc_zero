@@ -7,20 +7,22 @@ import os
 
 class policy_value_net_cpu(object):
     def __init__(self, learning_rate_fn, res_block_nums = 7):
+        print("init cpu net")
         #         self.ckpt = os.path.join(os.getcwd(), 'models/best_model.ckpt-13999')    # TODO
-        self.save_dir = "./cpu_models"
+        # self.save_dir = "./cpu_models"
+        self.save_dir_distributed = "./gpu_models" # only for prediction in mcts process of ditributed_train mode
         self.is_logging = True
 
-        if tf.io.gfile.exists(self.save_dir):
-            pass
-        else:
-            tf.io.gfile.makedirs(self.save_dir)
+        # if tf.io.gfile.exists(self.save_dir):
+        #     pass
+        # else:
+        #     tf.io.gfile.makedirs(self.save_dir)
 
-        train_dir = os.path.join(self.save_dir, 'summaries', 'train')
-        test_dir = os.path.join(self.save_dir, 'summaries', 'eval')
+        # train_dir = os.path.join(self.save_dir, 'summaries', 'train')
+        # test_dir = os.path.join(self.save_dir, 'summaries', 'eval')
 
-        self.train_summary_writer = summary_ops_v2.create_file_writer(train_dir, flush_millis=10000)
-        self.test_summary_writer = summary_ops_v2.create_file_writer(test_dir, flush_millis=10000, name='test')
+        # self.train_summary_writer = summary_ops_v2.create_file_writer(train_dir, flush_millis=10000)
+        # self.test_summary_writer = summary_ops_v2.create_file_writer(test_dir, flush_millis=10000, name='test')
 
         # Variables
         self.filters_size = 128    # or 256
@@ -65,7 +67,7 @@ class policy_value_net_cpu(object):
             inputs=[self.inputs_],
             outputs=[self.policy_head, self.value_head])
 
-        self.model.summary()
+        # self.model.summary()
 
         self.global_step = tf.Variable(0, name="global_step", trainable=False)
         #         optimizer = tf.train.AdamOptimizer(self.learning_rate)
@@ -83,7 +85,8 @@ class policy_value_net_cpu(object):
         # with tf.control_dependencies(self.update_ops):
         #     self.train_op = optimizer.minimize(self.loss, global_step=self.global_step)
 
-        self.checkpoint_dir = os.path.join(self.save_dir, 'checkpoints')
+        # self.checkpoint_dir = os.path.join(self.save_dir, 'checkpoints')
+        self.checkpoint_dir = os.path.join(self.save_dir_distributed, 'checkpoints')
         self.checkpoint_prefix = os.path.join(self.checkpoint_dir, 'ckpt')
         self.checkpoint = tf.train.Checkpoint(model=self.model, optimizer=self.optimizer)
 
@@ -236,4 +239,3 @@ class policy_value_net_cpu(object):
         action_probs, value = self.model(positions, training=False)
 
         return action_probs, value
-

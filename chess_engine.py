@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+from pydoc import doc
 import tensorflow as tf
 import numpy as np
 import os
@@ -22,6 +23,13 @@ from mcts import *
 from params import *
 from chess_utils import raise_error
 
+import multiprocessing as mp
+from multiprocessing.managers import BaseManager
+
+def getManager():
+    m = BaseManager()
+    m.start()
+    return m
 
 def softmax(x):
     # print(x)
@@ -32,7 +40,7 @@ def softmax(x):
 
 class cchess_main(object):
 
-    def __init__(self, playout=400, in_batch_size=128, exploration=True, in_search_threads=16, processor="cpu", num_gpus=1, res_block_nums=7, human_color='b', train_epoch=42):
+    def __init__(self, playout=400, in_batch_size=128, exploration=True, in_search_threads=16, processor="cpu", num_gpus=1, res_block_nums=7, human_color='b', train_epoch=42, game_num=0, iteration=0, transfer_data=0):
         self.epochs = 5
         self.train_epoch = train_epoch
         self.playout_counts = playout    #400    #800    #1600    200
@@ -52,7 +60,7 @@ class cchess_main(object):
         self.learning_rate = 0.001    #5e-3    #    0.001
         self.lr_multiplier = 1.0  # adaptively adjust the learning rate based on KL
         self.buffer_size = 10000
-        self.data_buffer = deque(maxlen=self.buffer_size)
+        self.data_buffer = deque(maxlen=self.buffer_size)        
         self.game_borad =  Boardutils(human_color=human_color)
         self.processor = processor
         # self.current_player = 'w'    #“w”表示红方，“b”表示黑方。
@@ -65,6 +73,9 @@ class cchess_main(object):
         self.kl_targ = 0.025
         self.log_file = open(os.path.join(os.getcwd(), 'log_file.txt'), 'w')
         self.human_color = human_color
+        self.game_num = game_num
+        self.iteration = iteration
+        self.transfer_data = transfer_data
 
     @staticmethod
     def flip_policy(prob):
@@ -121,7 +132,7 @@ class cchess_main(object):
 
             if kl > self.kl_targ * 4:  # early stopping if D_KL diverges badly
                 break
-        self.policy_value_netowrk.save()
+        # self.policy_value_netowrk.save()
         print("[Policy-Value-Net] -> Training Took {} s".format(time.time() - start_time))
 
         # adaptively adjust the learning rate
@@ -133,12 +144,89 @@ class cchess_main(object):
         explained_var_old = 1 - np.var(np.array(winner_batch) - tf.squeeze(old_v)) / np.var(np.array(winner_batch)) # .flatten()
         explained_var_new = 1 - np.var(np.array(winner_batch) - tf.squeeze(new_v)) / np.var(np.array(winner_batch)) # .flatten()
         print(
-            "[Policy-Value-Net] -> KL Divergence:{}; \t\tLR Multiplier:{}; \n[Policy-Value-Net] -> Loss:{}; \t\t\tAccuracy:{}; \n[Policy-Value-Net] -> Explained Var (old):{}; \t\t\tExplained Var (new):{};".format(
+            "[Policy-Value-Net] -> KL Divergence:{}; \t\tLR Multiplier:{}; \n[Policy-Value-Net] -> Loss:{}; \t\t\tAccuracy:{}; \n[Policy-Value-Net] -> Explained Var (old):{}; \t\t\tExplained Var (new):{};\n".format(
                 kl, self.lr_multiplier, loss, accuracy, explained_var_old, explained_var_new))
         self.log_file.write("[Policy-Value-Net] -> KL Divergence:{}; \t\tLR Multiplier:{}; \n[Policy-Value-Net] -> Loss:{}; \t\t\tAccuracy:{}; \n[Policy-Value-Net] -> Explained Var (old):{}; \t\t\tExplained Var (new):{};".format(
                 kl, self.lr_multiplier, loss, accuracy, explained_var_old, explained_var_new) + '\n')
         self.log_file.flush()
         # return loss, accuracy
+
+    def mcts_process(self):
+        # self.processor = "cpu"
+        print("mcts process entered")
+        while(self.iteration.value <= self.train_epoch):
+            # start_time = time.time()
+            self.policy_value_netowrk.checkpoint.restore(tf.train.latest_checkpoint(self.policy_value_netowrk.checkpoint_dir))
+            # print("**************************************************")
+            # print("Restore Took {} s".format(time.time() - start_time))
+            # print("**************************************************")
+
+            play_data, episode_len = self.selfplay()
+            extend_data = []
+            # states_data = []
+            for state, mcts_prob, winner in play_data:
+                states_data = self.mcts.state_to_positions(state)
+                extend_data.append((states_data, mcts_prob, winner))
+
+            self.transfer_data.put(extend_data)
+            # print("data pushed\n")
+            self.game_num.value += 1
+
+        print("mcts process exited")
+
+    def train_process(self):
+        # self.game_loop
+        start_time = time.time()
+        print("[Train CChess] -> Training Start ({} Epochs)\n".format(self.train_epoch))
+
+        try:
+            # time.sleep(10)
+            self.iteration.value = 0
+            total_data_len = 0
+            while(self.iteration.value <= self.train_epoch):
+                # print("**************")
+                print("game_num : ", self.game_num.value)
+                # print("**************")
+                # print("self.transfer_data.empty: ", self.transfer_data.empty())
+
+                if self.transfer_data.empty() == False:
+                    while (self.transfer_data.empty() == False):
+                        extend_data = self.transfer_data.get()
+                        self.data_buffer.extend(extend_data)
+                        total_data_len = total_data_len + len(extend_data)
+                        print(".")  
+                    print("data pulled")
+                self.log_file.write("time:{}\t\ttotal_data_len:{}".format(time.time()-start_time, total_data_len) + '\n')
+                self.log_file.flush()  
+
+                print("training data_buffer len : ", len(self.data_buffer))
+                if len(self.data_buffer) > self.batch_size:
+                    self.iteration.value = self.iteration.value + 1
+                    print("**************")
+                    print("iteration: ", self.iteration.value)
+                    print("**************")
+                    self.log_file.write("iteration:{}".format(self.iteration.value) + '\n')
+                    self.log_file.write("game_num:{}".format(self.game_num.value) + '\n')
+                    self.log_file.flush()
+                    
+                    self.policy_update()
+                    if self.iteration.value % 10 == 0:
+                        self.policy_value_netowrk.save()
+                        print("Network saved\n")
+                else:
+                    time.sleep(30)
+
+            self.log_file.close()
+            
+            self.policy_value_netowrk.save()
+
+            print("[Train CChess] -> Training Finished, Took {}s".format(time.time() - start_time))
+
+        except KeyboardInterrupt:
+            raise_error(__file__, sys._getframe().f_lineno, \
+                message=("CChess Training Finished (KeyboardInterrupt) and Model Saved"), color="yellow")
+            self.log_file.close()
+            self.policy_value_netowrk.save()
 
     def run(self):
         #self.game_loop
@@ -147,6 +235,7 @@ class cchess_main(object):
         print("[Train CChess] -> Training Start ({} Epochs)".format(self.train_epoch ))
 
         try:
+            total_data_len = 0
             while(batch_iter <= self.train_epoch):
                 batch_iter += 1
                 play_data, episode_len = self.selfplay()
@@ -157,6 +246,10 @@ class cchess_main(object):
                     states_data = self.mcts.state_to_positions(state)
                     extend_data.append((states_data, mcts_prob, winner))
                 self.data_buffer.extend(extend_data)
+                total_data_len = total_data_len + len(extend_data)
+                self.log_file.write("time:{}\t\ttotal_data_len:{}".format(time.time()-start_time, total_data_len) + '\n')
+                self.log_file.flush()
+                print("training data_buffer len : ", len(self.data_buffer))  
                 if len(self.data_buffer) > self.batch_size:
                     self.policy_update()
 
@@ -228,7 +321,7 @@ class cchess_main(object):
         # for i in range(self.playout_counts):
         #     state_sim = copy.deepcopy(state)
         #     self.mcts.do_simulation(state_sim, self.game_borad.current_player, self.game_borad.restrict_round)
-
+        
         self.mcts.main(state, self.game_borad.current_player, self.game_borad.restrict_round, self.playout_counts)
 
         actions_visits = [(act, nod.N) for act, nod in self.mcts.root.child.items()]
@@ -385,7 +478,9 @@ class cchess_main(object):
         start_time = time.time()
         # self.game_borad.print_borad(self.game_borad.state)
         while(not game_over):
+            # print("ready to get action")
             action, probs, win_rate = self.get_action(self.game_borad.state, self.temperature)
+            # print("action got")
             state, palyer = self.mcts.try_flip(self.game_borad.state, self.game_borad.current_player, self.mcts.is_black_turn(self.game_borad.current_player))
             states.append(state)
             prob = np.zeros(labels_len)
@@ -435,5 +530,5 @@ class cchess_main(object):
             if(game_over):
                 # self.mcts.root = leaf_node(None, self.mcts.p_, "RNBAKABNR/9/1C5C1/P1P1P1P1P/9/9/p1p1p1p1p/1c5c1/9/rnbakabnr")#"rnbakabnr/9/1c5c1/p1p1p1p1p/9/9/P1P1P1P1P/1C5C1/9/RNBAKABNR"
                 self.mcts.reload()
-        print("[Self-Play] -> Took {} s".format(time.time() - start_time))
+        print("[Self-Play] -> Took {} s\n".format(time.time() - start_time))
         return zip(states, mcts_probs, z), len(z)

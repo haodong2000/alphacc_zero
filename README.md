@@ -1,8 +1,6 @@
 # SRTP_Alpha_CC_Zero
 
-### From ZJU-ShallowMind
-
-- Alpha CC Zero:  A Deep Reinforcement Learning Model for Chinese Chess
+- Alpha CC Zero: A Deep Reinforcement Learning Model for Chinese Chess
 - Environment:
 
 ```
@@ -19,6 +17,13 @@ uvloop
 ```
 python main.py --mode train --processor gpu --num_gpus 1 --res_block_nums 7 --train_epoch 100
 python main.py --mode play --processor gpu --num_gpus 1 --ai_function mcts --ai_count 1 
+
+multiple processes train:
+python main.py --mode distributed_train --processor gpu --train_playout 400 --res_block_nums 9 --train_epoch 100 --batch_size 256 --mcts_num 8
+
+evaluate (compute elo):
+python main.py --mode eval --processor gpu --play_playout 40 --res_block_nums 9 --eval_num 1 --game_num 10
+
 ```
 
 - Self-Play & Network Training
