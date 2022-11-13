@@ -17,6 +17,25 @@ class Chessboard:
 
     def __init__(self, north_is_red=True) -> None:
 
+        self.north_is_red = north_is_red
+
+        is_red_list = [north_is_red, not north_is_red]
+        direction_list = ["north", "south"]
+        classes = [General, Soldier, Cannon, Advisor, Elephant, Horse, Chariot]
+        names = ["General", "Soldier", "Cannon", "Advisor", "Elephant", "Horse", "Chariot"]
+
+        for i in range(len(names)):
+            for position in pos_of_chesses[names[i]]:
+                poses = position.generate_position()
+                for pos in poses:
+                    index = 0 if pos[1] <= river_y[0] else 1
+                    Chessboard.chesses[pos[0], pos[1]] = classes[i](pos[0], pos[1], \
+                        is_red=is_red_list[index], direction=direction_list[index])
+    
+    def reload(self):
+        
+        north_is_red = self.north_is_red
+
         is_red_list = [north_is_red, not north_is_red]
         direction_list = ["north", "south"]
         classes = [General, Soldier, Cannon, Advisor, Elephant, Horse, Chariot]

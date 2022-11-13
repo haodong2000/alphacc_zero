@@ -18,9 +18,10 @@ class Chessgame:
     '''
     time_red = []
     time_black = []
+    model_path = "./gpu_models/checkpoints/ckpt-"
 
     def __init__(self, in_ai_count, in_ai_function, in_play_playout, in_delay, in_end_delay, batch_size, search_threads,
-                 processor, num_gpus, res_block_nums, human_color="b"):
+                 processor, num_gpus, res_block_nums, human_color="b", if_eval=False):
         self.human_color = human_color
         self.current_player = "w"
         self.players = {}
@@ -46,6 +47,9 @@ class Chessgame:
         self.cchess_engine = cchess_main(playout=self.play_playout, in_batch_size=batch_size, exploration=False, in_search_threads=search_threads,
                                          processor=processor, num_gpus=num_gpus, res_block_nums=res_block_nums, human_color=human_color)
 
+        self.if_eval = if_eval
+        self.eval_num = 0
+
     def player_is_red(self):
         return self.current_player == "w"
 
@@ -63,6 +67,38 @@ class Chessgame:
             self.view.draw_board(self.board)
 
         self.view.start()
+
+    def eval_start(self, eval_num):
+        self.cchess_engine.game_borad.reload()
+        self.cchess_engine.mcts.reload()
+        self.board.reload()
+        self.view.board = self.board
+        self.view.show_msg("Initialization ...")
+        self.view.draw_board(self.board)
+        self.current_player = 'w'
+        self.cur_round = 1
+
+        # time.sleep(1)
+        self.eval_num = eval_num
+
+        self.view.show_msg("Red")
+
+        print ("-" * 40 + '<Round %d>' % self.cur_round + "-" * 40)
+
+        if self.if_eval:
+            self.cchess_engine.policy_value_netowrk.checkpoint.restore(self.model_path + str(eval_num))
+
+        self.win_rate['w'] = self.perform_AI()
+        self.view.draw_board(self.board)
+
+        self.view.start()
+
+        ret, winner = self.cchess_engine.check_end()
+
+        if ret:
+            return winner
+        else:
+            return 'error'
 
     def disp_mcts_msg(self):
         self.view.show_msg("MCTS Searching...")
@@ -125,6 +161,13 @@ class Chessgame:
 
     def change_player(self):
         self.current_player = "w" if self.current_player == "b" else "b"
+
+        if self.if_eval:
+            if self.current_player == "w":
+                self.cchess_engine.policy_value_netowrk.checkpoint.restore(self.model_path + str(self.eval_num))
+            else:
+                self.cchess_engine.policy_value_netowrk.checkpoint.restore(self.model_path + str(self.eval_num + 1))
+
         if self.current_player == "w":
             self.cur_round += 1
             print ("-" * 40 + '<Round %d>' % self.cur_round + "-" * 40)

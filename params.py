@@ -1,8 +1,10 @@
 # -*- coding: utf-8 -*-
 
 test_mode = False
-tie_tolerance = 999
-tie_tolerance_train = 99
+tie_tolerance = 40
+tie_tolerance_train = 60
+# tie_tolerance = 600
+# tie_tolerance_train = 60
 # cchess_epoches = 42
 
 chess_en = {

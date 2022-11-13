@@ -318,11 +318,14 @@ class MCTS_tree(object):
     #@profile
     def main(self, state, current_player, restrict_round, playouts):
         node = self.root
+        # print("ready to expand leaf")
         if not self.is_expanded(node):    # and node.is_leaf()    # node.state
             # print('Expadning Root Node...')
             positions = self.generate_inputs(node.state, current_player)
             positions = np.expand_dims(positions, 0)
+            # print("ready to forward")
             action_probs, value = self.forward(positions)
+            # print("forward done")
             if self.is_black_turn(current_player):
                 action_probs = flip_policy(action_probs)
 
@@ -333,6 +336,7 @@ class MCTS_tree(object):
             self.expanded.add(node)    # node.state
 
         coroutine_list = []
+        # print("ready to do tree_search")
         for _ in range(playouts):
             coroutine_list.append(self.tree_search(node, current_player, restrict_round))
         coroutine_list.append(self.prediction_worker())
@@ -421,4 +425,3 @@ class MCTS_tree(object):
 
     def is_black_turn(self, current_player):
         return current_player == 'b'
-

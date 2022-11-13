@@ -6,15 +6,18 @@ from params import *
 from chess_utils import raise_error
 import os
 import sys
+import time
 
 
 PS_OPS = ['Variable', 'VariableV2', 'AutoReloadVariable']
 
 class policy_value_net(object):
 
-    def __init__(self, learning_rate, num_of_res_block=19):
+    def __init__(self, num_gpus, num_of_res_block=19):
+        print("init gpu net")
         self.save_path = "./gpu_models"
         self.logging = True
+        self.num_gpus = num_gpus
         
         if not os.path.exists(self.save_path):
             raise_error(__file__, sys._getframe().f_lineno, \
@@ -75,11 +78,11 @@ class policy_value_net(object):
                 inputs=[self.inputs_],
                 outputs=[self.policy_head, self.value_head])
 
-            self.model.summary()
+            # self.model.summary()
 
             # optimizer & loss
             self.momentum_opt = 0.9
-            self.learning_rate = learning_rate
+            self.learning_rate = 0.001
             self.optimizer = tf.keras.optimizers.SGD(learning_rate=self.learning_rate, momentum=self.momentum_opt, nesterov=True)
 
             self.compute_accuracy = tf.keras.metrics.CategoricalAccuracy()
@@ -90,7 +93,14 @@ class policy_value_net(object):
             self.checkpoint = tf.train.Checkpoint(model=self.model, optimizer=self.optimizer)
 
             # Restore variables on creation if a checkpoint exists.
+
+            start_time = time.time()
             self.checkpoint.restore(tf.train.latest_checkpoint(self.checkpoint_dir))
+            print("**************************************************")
+            print("Restore Took {} s".format(time.time() - start_time))
+            print("**************************************************")
+
+            # print(tf.train.latest_checkpoint(self.checkpoint_dir))
 
     def residual_block(self, in_layer):
         orig = tf.convert_to_tensor(in_layer)
