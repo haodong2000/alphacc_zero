@@ -11,6 +11,9 @@ gpu_models/
 temp.py
 log_file.txt
 
+# 2022-11-14
+temp/
+
 # Distribution / packaging
 .Python
 build/
