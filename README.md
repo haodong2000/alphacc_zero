@@ -25,7 +25,7 @@ python main.py --mode play --processor gpu --num_gpus 1 --ai_function mcts --ai_
 python main.py --mode distributed_train --processor gpu --train_playout 400 --res_block_nums 9 --train_epoch 100 --batch_size 256 --mcts_num 8
 ```
 
-- Evaluate (compute elo):
+- Evaluate (Compute elo)
 
 ```
 python main.py --mode eval --processor gpu --play_playout 40 --res_block_nums 9 --eval_num 1 --game_num 10
