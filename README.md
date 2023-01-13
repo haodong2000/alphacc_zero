@@ -1,6 +1,11 @@
-# SRTP_Alpha_CC_Zero
+# Alpha CC Zero
 
 - Alpha CC Zero: A Deep Reinforcement Learning Model for Chinese Chess
+  - Designed a reinforcement learning algorithm based on AlphaGo Zero for Chinese chess playing
+  - Optimized the original AlphaGo Zero algorithm by 1) updating the data structure for Chinese chess games, 2) cutting off some branches of the self-play decision tree to reach deeper learning, 3) enriching the reward and punishment standards, and 4) finding a well-performed combination of different value and decision networks
+  - Enabled the new algorithm to surpass most human chess players
+  - Demo for the entire SRTP: https://www.youtube.com/watch?v=V6IXxbrqHmE, which included 3 studies, with the following two projects listed below
+
 - Environment:
 
 ```
