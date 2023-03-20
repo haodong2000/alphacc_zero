@@ -24,6 +24,7 @@ class Visualization:
     canvas.create_image(canvas_scale.board_x, canvas_scale.board_y, \
                         image=board_img, anchor=tkinter.NW)
     piece_images = dict()
+    piece_images_id = []
     move_images = []
     # copy_font = font.Font(family='Arial', size=10, weight='bold')
     # copy = tkinter.Label(root, text=canvas_scale.copyright_, fg="black", bg="white", \
@@ -87,18 +88,24 @@ class Visualization:
         return canvas_scale.init_size + canvas_scale.block_len * x
 
     def draw_board(self, board):
+        for id in self.piece_images_id:
+            self.canvas.delete(id)
         self.piece_images.clear()
+        self.piece_images_id.clear()
         self.move_images = []
         pieces = board.chesses
         for (x, y) in pieces.keys():
             self.piece_images[x, y] = tkinter.PhotoImage(file=pieces[x, y].get_chess_image())
-            self.canvas.create_image(self.board_coord(x), self.board_coord(y), image=self.piece_images[x, y])
+            id = self.canvas.create_image(self.board_coord(x), self.board_coord(y), image=self.piece_images[x, y])
+            self.piece_images_id.append(id)
         if self.board.selected_chess:
             self.move_images.append(tkinter.PhotoImage(file="./chesses/images/target.png"))
-            self.canvas.create_image(self.board_coord(self.board.selected_chess.x), self.board_coord(self.board.selected_chess.y), image=self.move_images[-1])
+            id = self.canvas.create_image(self.board_coord(self.board.selected_chess.x), self.board_coord(self.board.selected_chess.y), image=self.move_images[-1])
+            self.piece_images_id.append(id)
             for (x, y) in self.board.selected_chess.get_move_locs(self.board):
                 self.move_images.append(tkinter.PhotoImage(file="./chesses/images/target.png"))
-                self.canvas.create_image(self.board_coord(x), self.board_coord(y), image=self.move_images[-1])
+                id = self.canvas.create_image(self.board_coord(x), self.board_coord(y), image=self.move_images[-1])
+                self.piece_images_id.append(id)
         self.root.update() # 2022-07-22
 
     def show_msg(self, msg):
