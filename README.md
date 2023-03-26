@@ -3,7 +3,9 @@
 - Designed a reinforcement learning algorithm based on AlphaGo Zero for Chinese chess playing
 - Optimized the original AlphaGo Zero algorithm by 1) updating the data structure for Chinese chess games, 2) cutting off some branches of the self-play decision tree to reach deeper learning, 3) enriching the reward and punishment standards, and 4) finding a well-performed combination of different value and decision networks
 - Enabled the new algorithm to surpass most human chess players
-- Demo for the entire SRTP: https://www.youtube.com/watch?v=V6IXxbrqHmE, which included 3 studies, with the [chess_simulator](https://github.com/lebronlihd/chess_simulator), and [chess_vision](https://github.com/lebronlihd/chess_vision).
+- Demos for the entire SRTP, which included 3 studies, with the [chess_simulator](https://github.com/lebronlihd/chess_simulator), and [chess_vision](https://github.com/lebronlihd/chess_vision).
+  - **[BiliBili Video Link](https://www.bilibili.com/video/BV1zK411f7zJ)**
+  - **[YouTube Viedo Link](https://youtu.be/V6IXxbrqHmE)**
 
 - Environment:
 
