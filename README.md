@@ -1,4 +1,4 @@
-# AlphaCC Zero: A Deep Reinforcement Learning Model for Chinese Chess (SRTP)
+## AlphaCC Zero: A Deep Reinforcement Learning Model for Chinese Chess (SRTP)
 
 - Designed a reinforcement learning algorithm based on AlphaGo Zero for Chinese chess playing
 - Optimized the original AlphaGo Zero algorithm by 1) updating the data structure for Chinese chess games, 2) cutting off some branches of the self-play decision tree to reach deeper learning, 3) enriching the reward and punishment standards, and 4) finding a well-performed combination of different value and decision networks
@@ -7,7 +7,9 @@
   - **[BiliBili Video Link](https://www.bilibili.com/video/BV1zK411f7zJ)**
   - **[YouTube Viedo Link](https://youtu.be/V6IXxbrqHmE)**
 
-- Environment:
+### Environment & Usage
+
+- Environment
 
 ```
 Python 3.6.13
@@ -18,24 +20,20 @@ scipy
 uvloop
 ```
 
-- How to run:
-- Just play
+- Usage
 
 ```
+# Just play
 python main.py --mode play --processor gpu --num_gpus 1 --ai_function mcts --ai_count 1 
-```
 
-- Multiple processes train
-
-```
+# Multiple processes train
 python main.py --mode distributed_train --processor gpu --train_playout 400 --res_block_nums 9 --train_epoch 100 --batch_size 256 --mcts_num 8
-```
 
-- Evaluate (Compute elo)
-
-```
+# Evaluate (Compute elo)
 python main.py --mode eval --processor gpu --play_playout 40 --res_block_nums 9 --eval_num 1 --game_num 10
 ```
+
+### Algorithm
 
 - Self-Play & Network Training
 
@@ -52,3 +50,4 @@ python main.py --mode eval --processor gpu --play_playout 40 --res_block_nums 9 
 - Reference
 
 [1] Silver, David, Schrittwieser, Julian, Simonyan, Karen, Antonoglou, Ioannis, Huang, Aja, Guez, Arthur, Hubert, Thomas, Baker, Lucas, Lai, Matthew, Bolton, Adrian, Chen, Yutian, Lillicrap, Timothy, Hui, Fan, Sifre, Laurent, van den Driessche, George, Graepel, Thore and Hassabis, Demis. "Mastering the game of Go without human knowledge." Nature 550 (2017): 354--.
+[2] https://github.com/chengstone/cchess-zero
