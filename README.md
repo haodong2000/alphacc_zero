@@ -6,6 +6,7 @@
 - Demos for the entire SRTP, which included 3 studies, with the [chess_simulator](https://github.com/lebronlihd/chess_simulator), and [chess_vision](https://github.com/lebronlihd/chess_vision).
   - **[BiliBili Video Link](https://www.bilibili.com/video/BV1zK411f7zJ)**
   - **[YouTube Viedo Link](https://youtu.be/V6IXxbrqHmE)**
+  - **[Project Website](https://lebronlihd.github.io/projects/alphacc_zero/)**
 
 ### Environment & Usage
 
